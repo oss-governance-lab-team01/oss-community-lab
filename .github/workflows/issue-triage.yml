@@ -1,0 +1,33 @@
+name: Automated Issue Triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome reporter and add triage label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const common = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+            };
+
+            await github.rest.issues.createComment({
+              ...common,
+              body: `Chào mừng @${issue.user.login}! Cảm ơn bạn đã gửi phản hồi cho dự án. Maintainer sẽ sàng lọc Issue sớm nhất có thể theo quy trình async-first. Vui lòng bổ sung log, hệ điều hành và phiên bản để giúp nhóm tái hiện vấn đề.`,
+            });
+
+            await github.rest.issues.addLabels({
+              ...common,
+              labels: ['status: needs-triage'],
+            });
